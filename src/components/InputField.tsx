@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import { useFormStatus } from "react-dom"
 
 const InputField = (props: {
+
   type: string,
   name: string,
   placeholder: string,
@@ -11,9 +12,12 @@ const InputField = (props: {
   required?: boolean,
   style?: string,
   accept?: string
+  defaultValue?: any
+  id?: string
+  selected?: string
 }) => {
   const { pending } = useFormStatus()
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState(props.defaultValue || '');
 
   useEffect(() => {
     if (pending)
