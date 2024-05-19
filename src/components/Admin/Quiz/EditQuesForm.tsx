@@ -1,17 +1,33 @@
 "use client"
 import SubmitButton from "../../SubmitButton";
 import InputField from "../../InputField";
-import { FormLabel, IconButton } from '@mui/material';
+import { FormLabel } from '@mui/material';
 import { RadioField1, RadioField2, RadioField3, RadioField4 } from "@/components/RadioField";
 import editQues from "@/actions/EditQuesAction";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Option, Question } from "@prisma/client";
-import { MdDelete } from "react-icons/md";
+import { SingleImageDropzone } from "@/components/FileDropzone";
+import { useState } from "react";
+import { useEdgeStore } from "@/state/EdgeStoreProvider";
 
 const EditQuesForm = (props: { quizId: string, ques: Question, options: Option[] }) => {
 
+    
+    const [file, setFile] = useState<File>();
+    const { edgestore } = useEdgeStore();
+    const [url, setUrl] = useState<string|null>(props.ques.media);
+
     async function clientAction(formData: FormData) {
+        if (file) {
+            const res = await edgestore.questionImages.upload({
+                file,
+                onProgressChange: (progress: any) => {
+                    console.log(progress);
+                },
+            });
+            formData.append("file", res.url);
+        }
         const result = await editQues(formData, props.ques.id);
         if (result?.error) {
             const errorMsg = result.error || "Something went wrong";
@@ -20,17 +36,9 @@ const EditQuesForm = (props: { quizId: string, ques: Question, options: Option[]
         else {
             toast.success("Successfully Edited Question")
         }
+        
     }
-    async function handleDeleteImage(formData: FormData){
-        const result = await editQues(formData, props.ques.id);
-        if (result?.error) {
-            const errorMsg = result.error || "Something went wrong";
-            toast.error(errorMsg)
-        }
-        else {
-            toast.success("Successfully Edited Question")
-        }
-    }
+
     return <>
         <h1 className="text-2xl text-white text-center">Edit Question</h1>
         <form
@@ -48,15 +56,19 @@ const EditQuesForm = (props: { quizId: string, ques: Question, options: Option[]
                 defaultValue={props.ques.title}
                 autoComplete="off"
             />
-            {props.ques.media && props.ques.media.length > 0 && (
-                <div className="flex items-center justify-center">
-                    <img src={props.ques.media} alt="Question Media" className="w-24 h-24 object-cover" />
-                    <IconButton> <MdDelete> </MdDelete> </IconButton>
-                </div>
-            )}
-            <FormLabel className="text-white mt-2" >Upload Image / Video / Audio</FormLabel>
-            <InputField type="file" accept="image/*" className="text-white rounded-full p-2 w-full" name="file" placeholder="Select file" autoComplete="off" />
-            <p className="text-xs mt-[-8px] text-gray-400">Choose any image or gif of size &lt; 10MB </p>
+            <SingleImageDropzone
+                name="file"
+                width={200}
+                height={200}
+                value={url != null && file === undefined  ? url : file}
+                onChange={(file) => {
+                    setFile(file);
+                }}
+                removeMedia={() => {
+                    setUrl(null);
+                    setFile(undefined);
+                }}
+            />
             <FormLabel>Enter options</FormLabel>
             <div className="grid grid-cols-2 gap-x-2">
                 <div>

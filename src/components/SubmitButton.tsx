@@ -7,7 +7,8 @@ const SubmitButton = (params: {
   text?: string,
   style?: string,
   isQuiz?: boolean,
-  error?: boolean
+  error?: boolean,
+  onClick?: (formData: FormData) => void
 }) => {
   const { pending } = useFormStatus()
   const dispatch = useDispatch()
