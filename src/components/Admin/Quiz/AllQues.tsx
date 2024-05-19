@@ -5,6 +5,8 @@ import { redirect } from "next/navigation"
 import ShowMedia from "./ShowMediaComp";
 import { MdDeleteOutline } from "react-icons/md";
 import { revalidatePath } from "next/cache";
+import EditQuestionModal from "@/components/EditQuesModal";
+import EditQuesForm from "./EditQuesForm";
 
 export default async function AllQues(props: { quizId: string }) {
     const session = await getServerSession(authOptions);
@@ -41,6 +43,11 @@ export default async function AllQues(props: { quizId: string }) {
                         <input type="text" className="hidden" name="ques_id" value={ques.id} />
                         <button type="submit"><MdDeleteOutline size={24} className="absolute right-1 top-0 cursor-pointer" /></button>
                     </form>
+                    <div className="absolute right-1 bottom-8 cursor-pointer" >
+                        <EditQuestionModal>
+                            <EditQuesForm quizId={props.quizId} ques={ques} options={ques.options} />
+                        </EditQuestionModal>
+                    </div>
                     <div className="flex flex-col w-1/2">
                         <p className="text-xl mb-2 font-semibold text-slate-200">Question {index + 1}. {ques.title}</p>
                         <p className="text-sm text-gray-300 mb-4">Timeout : {ques.timeOut}</p>
